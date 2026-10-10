@@ -15,6 +15,7 @@ public class Producto {
         this.codigo = codigo;
         this.nombre = nombre;
         this.existencia = existencia;
+        this.nivelMinimo = nivelMinimo;
         this.nivelMaximo = nivelMaximo;
         this.observadores = new ArrayList<>();
     }
