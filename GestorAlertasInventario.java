@@ -43,4 +43,8 @@ public class GestorAlertasInventario implements ObservadorInventario {
         System.out.println(alerta.mostrarAlerta());
 
     }
+
+    public List<AlertaInventario> getAlertas() {
+        return alertas;
+    }
 }
