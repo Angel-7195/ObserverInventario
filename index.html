@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistema de Inventario - Patrón Observer</title>
+<style>
+  :root {
+    --fondo: #f3f4f6;
+    --tarjeta: #ffffff;
+    --texto: #1f2328;
+    --suave: #656d76;
+    --borde: #d0d7de;
+    --verde: #2ea043;
+    --rojo: #cf222e;
+    --naranja: #db7800;
+    --azul: #0969da;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+  }
+  header {
+    background: var(--azul);
+    color: #fff;
+    padding: 16px 24px;
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; opacity: .85; font-size: 13px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+  .fila { display: grid; gap: 16px; }
+  .fila.tres { grid-template-columns: repeat(3, 1fr); }
+  .fila.dos { grid-template-columns: 2fr 1fr; margin-top: 16px; }
+  @media (max-width: 860px) {
+    .fila.tres, .fila.dos { grid-template-columns: 1fr; }
+  }
+  .tarjeta {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .tarjeta h2 { margin: 0 0 12px; font-size: 15px; }
+  label { display: block; font-size: 13px; color: var(--suave); margin-top: 8px; }
+  input {
+    width: 100%;
+    padding: 7px 9px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  button {
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: #f6f8fa;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(.96); }
+  button.entrada { color: #1a7f37; }
+  button.salida { color: var(--rojo); }
+  .estado { text-align: center; }
+  .estado .nombre { font-weight: 700; font-size: 16px; }
+  .estado .numero { font-size: 52px; font-weight: 800; line-height: 1.1; }
+  .estado .unidades { color: var(--suave); font-size: 13px; }
+  .insignia {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 4px 14px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .barra {
+    position: relative;
+    height: 16px;
+    background: #e1e4e8;
+    border-radius: 8px;
+    margin: 6px 4px;
+  }
+  .barra .lleno { height: 100%; border-radius: 8px; transition: width .3s, background .3s; }
+  .barra .marca {
+    position: absolute;
+    top: -4px;
+    width: 2px;
+    height: 24px;
+    background: #444;
+  }
+  .limites { color: var(--suave); font-size: 13px; }
+  .ayuda { color: var(--suave); font-size: 13px; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--borde); }
+  th { background: #f6f8fa; }
+  td.tipo { font-weight: 700; white-space: nowrap; }
+  td.fecha { white-space: nowrap; color: var(--suave); }
+  .vacio { color: var(--suave); font-size: 13px; padding: 8px; }
+  #historial {
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    background: #f6f8fa;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 8px;
+    height: 260px;
+    overflow-y: auto;
+    white-space: pre;
+  }
+  #aviso {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: 340px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sistema de Inventario</h1>
+  <p>Patrón Observer: el producto notifica al GestorAlertasInventario y al servidor cada vez que cambia su existencia.</p>
+</header>
+
+<main>
+  <div class="fila tres">
+    <section class="tarjeta">
+      <h2>1. Producto</h2>
+      <form id="formProducto">
+        <label>Código <input name="codigo" value="P001" required></label>
+        <label>Nombre <input name="nombre" value="Arroz" required></label>
+        <label>Existencia inicial <input name="existencia" type="number" min="0" value="10" required></label>
+        <label>Nivel mínimo <input name="minimo" type="number" min="0" value="5" required></label>
+        <label>Nivel máximo <input name="maximo" type="number" min="1" value="20" required></label>
+        <button type="submit">Crear producto</button>
+      </form>
+    </section>
+
+    <section class="tarjeta estado">
+      <h2>2. Estado del inventario</h2>
+      <div class="nombre" id="nombre">-</div>
+      <div class="numero" id="existencia">0</div>
+      <div class="unidades">unidades en existencia</div>
+      <div class="insignia" id="insignia">-</div>
+      <div class="barra">
+        <div class="lleno" id="lleno"></div>
+        <div class="marca" id="marcaMin"></div>
+        <div class="marca" id="marcaMax"></div>
+      </div>
+      <div class="limites" id="limites">-</div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>3. Movimientos</h2>
+      <label>Cantidad <input id="cantidad" type="number" min="1" value="1"></label>
+      <button class="entrada" id="btnEntrada">Registrar entrada (+)</button>
+      <button class="salida" id="btnSalida">Registrar salida (-)</button>
+      <p class="ayuda">Cada movimiento cambia la existencia y el producto notifica a sus observadores.</p>
+    </section>
+  </div>
+
+  <div class="fila dos">
+    <section class="tarjeta">
+      <h2>Alertas generadas por GestorAlertasInventario</h2>
+      <table>
+        <thead><tr><th>Tipo</th><th>Mensaje</th><th>Fecha</th></tr></thead>
+        <tbody id="alertas"></tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Historial de movimientos</h2>
+      <div id="historial"></div>
+      <button id="btnLimpiar">Limpiar</button>
+    </section>
+  </div>
+</main>
+
+<div id="aviso"></div>
+
+<script>
+  const COLORES = { NORMAL: "var(--verde)", REABASTECER: "var(--rojo)", EXCESO: "var(--naranja)" };
+  let alertasPrevias = 0;
+
+  async function llamar(ruta, datos) {
+    const opciones = datos
+      ? { method: "POST", body: new URLSearchParams(datos) }
+      : { method: "GET" };
+    const respuesta = await fetch(ruta, opciones);
+    const estado = await respuesta.json();
+    if (estado.error) {
+      aviso(estado.error, "var(--rojo)");
+    }
+    pintar(estado);
+  }
+
+  function pintar(e) {
+    const p = e.producto;
+    const color = COLORES[e.estado];
+
+    document.getElementById("nombre").textContent = p.nombre + "  (" + p.codigo + ")";
+    const existencia = document.getElementById("existencia");
+    existencia.textContent = p.existencia;
+    existencia.style.color = color;
+
+    const insignia = document.getElementById("insignia");
+    insignia.textContent = e.estado;
+    insignia.style.background = color;
+
+    // La escala llega un 25% por encima del maximo para que el exceso se vea.
+    const tope = Math.max(p.maximo * 1.25, p.existencia, 1);
+    const lleno = document.getElementById("lleno");
+    lleno.style.width = (Math.min(p.existencia, tope) / tope * 100) + "%";
+    lleno.style.background = color;
+    document.getElementById("marcaMin").style.left = (p.minimo / tope * 100) + "%";
+    document.getElementById("marcaMax").style.left = (p.maximo / tope * 100) + "%";
+    document.getElementById("limites").textContent = "Mínimo: " + p.minimo + "   |   Máximo: " + p.maximo;
+
+    const tabla = document.getElementById("alertas");
+    tabla.innerHTML = "";
+    if (e.alertas.length === 0) {
+      tabla.innerHTML = '<tr><td colspan="3" class="vacio">Sin alertas por ahora.</td></tr>';
+    }
+    for (const a of e.alertas) {
+      const fila = document.createElement("tr");
+      const tipo = document.createElement("td");
+      tipo.className = "tipo";
+      tipo.textContent = a.tipo;
+      tipo.style.color = a.tipo === "EXCESO" ? "var(--naranja)" : "var(--rojo)";
+      const mensaje = document.createElement("td");
+      mensaje.textContent = a.mensaje;
+      const fecha = document.createElement("td");
+      fecha.className = "fecha";
+      fecha.textContent = a.fecha;
+      fila.append(tipo, mensaje, fecha);
+      tabla.append(fila);
+    }
+
+    // Aviso emergente cuando el gestor genera una alerta nueva.
+    if (e.alertas.length > alertasPrevias && alertasPrevias !== -1) {
+      const nueva = e.alertas[0];
+      aviso("ALERTA " + nueva.tipo + ": " + nueva.mensaje,
+            nueva.tipo === "EXCESO" ? "var(--naranja)" : "var(--rojo)");
+    }
+    alertasPrevias = e.alertas.length;
+
+    const historial = document.getElementById("historial");
+    historial.textContent = e.historial.join("\n");
+    historial.scrollTop = historial.scrollHeight;
+  }
+
+  let temporizador;
+  function aviso(texto, color) {
+    const caja = document.getElementById("aviso");
+    caja.textContent = texto;
+    caja.style.background = color;
+    caja.style.display = "block";
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => caja.style.display = "none", 3500);
+  }
+
+  document.getElementById("formProducto").addEventListener("submit", ev => {
+    ev.preventDefault();
+    alertasPrevias = 0;
+    llamar("/api/producto", Object.fromEntries(new FormData(ev.target)));
+  });
+  document.getElementById("btnEntrada").addEventListener("click", () =>
+    llamar("/api/entrada", { cantidad: document.getElementById("cantidad").value }));
+  document.getElementById("btnSalida").addEventListener("click", () =>
+    llamar("/api/salida", { cantidad: document.getElementById("cantidad").value }));
+  document.getElementById("btnLimpiar").addEventListener("click", () =>
+    llamar("/api/limpiar-historial", {}));
+
+  // Al cargar la pagina no se muestra aviso por alertas que ya existian.
+  alertasPrevias = -1;
+  llamar("/api/estado");
+</script>
+</body>
+</html>
