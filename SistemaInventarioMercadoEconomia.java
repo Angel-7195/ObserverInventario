@@ -4,6 +4,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -1182,8 +1183,7 @@ public class SistemaInventarioMercadoEconomia {
             header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
             header.setBorder(new EmptyBorder(30, 20, 30, 20));
 
-            JLabel lblIcono = new JLabel("🛒", SwingConstants.CENTER);
-            lblIcono.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 42));
+            JLabel lblIcono = new JLabel(new Icono("CARRITO", 48, Color.WHITE), SwingConstants.CENTER);
             lblIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel lblTitulo = new JLabel("MERCADO LA ECONOMÍA");
@@ -1218,7 +1218,7 @@ public class SistemaInventarioMercadoEconomia {
             gbc.insets = new Insets(6, 0, 6, 0);
             gbc.gridx = 0;
 
-            JLabel lblBienvenida = new JLabel("Iniciar Sesión (CU11)");
+            JLabel lblBienvenida = new JLabel("Iniciar Sesión");
             lblBienvenida.setFont(FUENTE_SUBTITULO);
             lblBienvenida.setForeground(COLOR_TEXTO);
             gbc.gridy = 0;
@@ -1283,7 +1283,7 @@ public class SistemaInventarioMercadoEconomia {
             String pass = new String(txtPassword.getPassword());
 
             if (user.trim().isEmpty() || pass.trim().isEmpty()) {
-                lblMensajeError.setText("⚠ Ingrese usuario y contraseña.");
+                ponerEstado(lblMensajeError, "ALERTA", "Ingrese usuario y contraseña.");
                 return;
             }
 
@@ -1293,7 +1293,7 @@ public class SistemaInventarioMercadoEconomia {
                 VentanaPrincipal principal = new VentanaPrincipal(repo, autenticado);
                 principal.setVisible(true);
             } else {
-                lblMensajeError.setText("✖ Credenciales inválidas o usuario inactivo.");
+                ponerEstado(lblMensajeError, "ERROR", "Credenciales inválidas o usuario inactivo.");
             }
         }
     }
@@ -1366,24 +1366,28 @@ public class SistemaInventarioMercadoEconomia {
             topBar.setBackground(COLOR_PRIMARIO);
             topBar.setBorder(new EmptyBorder(12, 20, 12, 20));
 
-            JLabel lblMarca = new JLabel("🛒 MERCADO LA ECONOMÍA  |  Control de Inventario");
+            JLabel lblMarca = new JLabel("MERCADO LA ECONOMÍA  |  Control de Inventario");
             lblMarca.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            lblMarca.setIcon(new Icono("CARRITO", 22));
+            lblMarca.setIconTextGap(8);
             lblMarca.setForeground(Color.WHITE);
 
             JPanel panelDerechoHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
             panelDerechoHeader.setOpaque(false);
 
-            btnBadgeAlertas = new JButton("🔔 Alertas Activas: 0");
+            btnBadgeAlertas = new JButton("Alertas Activas: 0");
             btnBadgeAlertas.setFont(FUENTE_NEGRITA);
+            btnBadgeAlertas.setIcon(new Icono("CAMPANA"));
             btnBadgeAlertas.setBackground(COLOR_ALERTA_BAJO);
             btnBadgeAlertas.setForeground(Color.WHITE);
             btnBadgeAlertas.setFocusPainted(false);
             btnBadgeAlertas.setCursor(new Cursor(Cursor.HAND_CURSOR));
             btnBadgeAlertas.addActionListener(e -> mostrarVista("ALERTAS"));
 
-            JLabel lblUsuarioInfo = new JLabel("👤 " + usuarioActual.getNombresCompletos() +
+            JLabel lblUsuarioInfo = new JLabel(usuarioActual.getNombresCompletos() +
                     " [" + usuarioActual.getRol().getNombre() + "]");
             lblUsuarioInfo.setFont(FUENTE_NORMAL);
+            lblUsuarioInfo.setIcon(new Icono("USUARIO"));
             lblUsuarioInfo.setForeground(new Color(220, 252, 231));
 
             JButton btnCerrarSesion = new JButton("Cerrar Sesión");
@@ -1417,11 +1421,11 @@ public class SistemaInventarioMercadoEconomia {
 
             // Restricción de acceso por permisos del Rol (RF10 / RNF28 / CU09 / CU11)
             Rol rol = usuarioActual.getRol();
-            if (rol.tienePermiso(Rol.P_DASHBOARD)) agregarBotonMenu(sideBar, "📊  Resumen General", "DASHBOARD");
-            if (rol.tienePermiso(Rol.P_PRODUCTOS)) agregarBotonMenu(sideBar, "📦  Productos (CU01-CU04)", "PRODUCTOS");
-            if (rol.tienePermiso(Rol.P_MOVIMIENTOS)) agregarBotonMenu(sideBar, "🔄  Entradas y Salidas (CU05/10)", "MOVIMIENTOS");
-            if (rol.tienePermiso(Rol.P_HISTORIAL)) agregarBotonMenu(sideBar, "📜  Historial Movimientos (CU06)", "HISTORIAL");
-            if (rol.tienePermiso(Rol.P_ALERTAS)) agregarBotonMenu(sideBar, "⚠️  Niveles y Alertas (CU07/08)", "ALERTAS");
+            if (rol.tienePermiso(Rol.P_DASHBOARD)) agregarBotonMenu(sideBar, "GRAFICA", "Resumen General", "DASHBOARD");
+            if (rol.tienePermiso(Rol.P_PRODUCTOS)) agregarBotonMenu(sideBar, "CAJA", "Productos", "PRODUCTOS");
+            if (rol.tienePermiso(Rol.P_MOVIMIENTOS)) agregarBotonMenu(sideBar, "ACTUALIZAR", "Entradas y Salidas", "MOVIMIENTOS");
+            if (rol.tienePermiso(Rol.P_HISTORIAL)) agregarBotonMenu(sideBar, "HISTORIAL", "Historial Movimientos", "HISTORIAL");
+            if (rol.tienePermiso(Rol.P_ALERTAS)) agregarBotonMenu(sideBar, "ALERTA", "Niveles y Alertas", "ALERTAS");
 
             if (rol.tienePermiso(Rol.P_USUARIOS)) {
                 sideBar.add(Box.createVerticalStrut(15));
@@ -1432,7 +1436,7 @@ public class SistemaInventarioMercadoEconomia {
                 lblAdminTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
                 sideBar.add(lblAdminTitulo);
 
-                agregarBotonMenu(sideBar, "👥  Usuarios y Roles (CU09)", "USUARIOS");
+                agregarBotonMenu(sideBar, "USUARIOS", "Usuarios y Roles", "USUARIOS");
             }
 
             sideBar.add(Box.createVerticalGlue());
@@ -1480,8 +1484,9 @@ public class SistemaInventarioMercadoEconomia {
             }
         }
 
-        private void agregarBotonMenu(JPanel sideBar, String texto, String vistaDestino) {
-            JButton btn = new JButton(texto);
+        private void agregarBotonMenu(JPanel sideBar, String icono, String texto, String vistaDestino) {
+            JButton btn = new JButton(texto, new Icono(icono));
+            btn.setIconTextGap(10);
             btn.setFont(FUENTE_NEGRITA);
             btn.setForeground(COLOR_TEXTO);
             btn.setBackground(new Color(241, 245, 249));
@@ -1532,7 +1537,7 @@ public class SistemaInventarioMercadoEconomia {
 
         private void actualizarBadgeAlertas() {
             int count = repo.getGestorAlertas().getAlertasActivas().size();
-            btnBadgeAlertas.setText("🔔 Alertas Activas: " + count);
+            btnBadgeAlertas.setText("Alertas Activas: " + count);
             btnBadgeAlertas.setBackground(count > 0 ? COLOR_ALERTA_BAJO : COLOR_SECUNDARIO);
         }
 
@@ -1590,10 +1595,10 @@ public class SistemaInventarioMercadoEconomia {
             lblExcesoStock = new JLabel("0");
             lblMovimientosHoy = new JLabel("0");
 
-            gridKPI.add(crearTarjetaKPI("Productos Activos", lblTotalProductos, COLOR_PRIMARIO, "📦"));
-            gridKPI.add(crearTarjetaKPI("Stock Bajo (Reabastecer)", lblStockBajo, COLOR_ALERTA_BAJO, "📉"));
-            gridKPI.add(crearTarjetaKPI("Exceso de Inventario", lblExcesoStock, COLOR_ALERTA_EXCESO, "📈"));
-            gridKPI.add(crearTarjetaKPI("Movimientos Registrados", lblMovimientosHoy, new Color(37, 99, 235), "🔄"));
+            gridKPI.add(crearTarjetaKPI("Productos Activos", lblTotalProductos, COLOR_PRIMARIO, "CAJA"));
+            gridKPI.add(crearTarjetaKPI("Stock Bajo (Reabastecer)", lblStockBajo, COLOR_ALERTA_BAJO, "BAJA"));
+            gridKPI.add(crearTarjetaKPI("Exceso de Inventario", lblExcesoStock, COLOR_ALERTA_EXCESO, "SUBE"));
+            gridKPI.add(crearTarjetaKPI("Movimientos Registrados", lblMovimientosHoy, new Color(37, 99, 235), "ACTUALIZAR"));
 
             JPanel topWrapper = new JPanel(new BorderLayout(0, 15));
             topWrapper.setOpaque(false);
@@ -1609,9 +1614,9 @@ public class SistemaInventarioMercadoEconomia {
             panelAccesos.setBackground(COLOR_PANEL);
             panelAccesos.setBorder(new TitledBorder(new LineBorder(new Color(226, 232, 240)), "Acciones Rápidas (Flujo Operativo)"));
 
-            JButton btnNuevaEntrada = crearBotonEstilizado("+ Registrar Entrada (CU10)", COLOR_SECUNDARIO, Color.WHITE);
-            JButton btnNuevaSalida = crearBotonEstilizado("- Registrar Salida / Venta (CU05)", new Color(37, 99, 235), Color.WHITE);
-            JButton btnNuevoProd = crearBotonEstilizado("📦 Nuevo Producto (CU01)", COLOR_PRIMARIO, Color.WHITE);
+            JButton btnNuevaEntrada = crearBotonEstilizado("+ Registrar Entrada", COLOR_SECUNDARIO, Color.WHITE);
+            JButton btnNuevaSalida = crearBotonEstilizado("- Registrar Salida / Venta", new Color(37, 99, 235), Color.WHITE);
+            JButton btnNuevoProd = crearBotonEstilizado("CAJA", "Nuevo Producto", COLOR_PRIMARIO, Color.WHITE);
 
             btnNuevaEntrada.addActionListener(e -> navegar.accept("MOVIMIENTOS"));
             btnNuevaSalida.addActionListener(e -> navegar.accept("MOVIMIENTOS"));
@@ -1625,7 +1630,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel panelAlertas = new JPanel(new BorderLayout(10, 10));
             panelAlertas.setBackground(COLOR_PANEL);
             panelAlertas.setBorder(new CompoundBorder(
-                    new TitledBorder(new LineBorder(new Color(226, 232, 240)), "Alertas Automáticas Activas (Patrón Observer - CU08)"),
+                    new TitledBorder(new LineBorder(new Color(226, 232, 240)), "Alertas Automáticas Activas (Patrón Observer)"),
                     new EmptyBorder(10, 10, 10, 10)
             ));
 
@@ -1660,8 +1665,7 @@ public class SistemaInventarioMercadoEconomia {
             lblValor.setFont(new Font("Segoe UI", Font.BOLD, 28));
             lblValor.setForeground(colorAcento);
 
-            JLabel lblIco = new JLabel(icono);
-            lblIco.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
+            JLabel lblIco = new JLabel(new Icono(icono, 32, colorAcento));
 
             card.add(lblTit, BorderLayout.NORTH);
             card.add(lblValor, BorderLayout.CENTER);
@@ -1735,7 +1739,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel header = new JPanel(new BorderLayout(10, 10));
             header.setOpaque(false);
 
-            JLabel lblTitulo = new JLabel("Catálogo y Gestión de Productos (CU01 - CU04)");
+            JLabel lblTitulo = new JLabel("Catálogo y Gestión de Productos");
             lblTitulo.setFont(FUENTE_TITULO);
             lblTitulo.setForeground(COLOR_TEXTO);
 
@@ -1745,7 +1749,7 @@ public class SistemaInventarioMercadoEconomia {
 
             JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
             panelBusqueda.setOpaque(false);
-            panelBusqueda.add(new JLabel("🔍 Buscar (Código, Nombre o Categoría):"));
+            panelBusqueda.add(new JLabel("Buscar (Código, Nombre o Categoría):", new Icono("BUSCAR"), SwingConstants.LEFT));
             txtBuscar = new JTextField(20);
             txtBuscar.setFont(FUENTE_NORMAL);
             txtBuscar.addKeyListener(new KeyAdapter() {
@@ -1762,10 +1766,10 @@ public class SistemaInventarioMercadoEconomia {
             JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
             panelBotones.setOpaque(false);
 
-            JButton btnNuevo = crearBotonEstilizado("+ Nuevo Producto (CU01)", COLOR_SECUNDARIO, Color.WHITE);
-            JButton btnEditar = crearBotonEstilizado("✏️ Editar (CU02)", new Color(37, 99, 235), Color.WHITE);
-            JButton btnDesactivar = crearBotonEstilizado("🚫 Activar/Desactivar (CU03)", COLOR_ALERTA_BAJO, Color.WHITE);
-            JButton btnImportar = crearBotonEstilizado("📥 Importar CSV (RNF14)", new Color(71, 85, 105), Color.WHITE);
+            JButton btnNuevo = crearBotonEstilizado("+ Nuevo Producto", COLOR_SECUNDARIO, Color.WHITE);
+            JButton btnEditar = crearBotonEstilizado("EDITAR", "Editar", new Color(37, 99, 235), Color.WHITE);
+            JButton btnDesactivar = crearBotonEstilizado("BLOQUEAR", "Activar/Desactivar", COLOR_ALERTA_BAJO, Color.WHITE);
+            JButton btnImportar = crearBotonEstilizado("IMPORTAR", "Importar CSV (RNF14)", new Color(71, 85, 105), Color.WHITE);
             btnImportar.setToolTipText("<html>Formato por línea (separador ; o ,):<br>codigo;nombre;categoria;unidad;precio;existencia;minimo;maximo</html>");
 
             btnNuevo.addActionListener(e -> abrirDialogoProducto(null, null));
@@ -1886,11 +1890,13 @@ public class SistemaInventarioMercadoEconomia {
             // Flujo alternativo CU04: informar cuando no hay coincidencias
             if (modeloTabla.getRowCount() == 0) {
                 lblSinResultados.setForeground(COLOR_ALERTA_EXCESO);
+                lblSinResultados.setIcon(new Icono("INFO"));
                 lblSinResultados.setText(filtro.isEmpty()
-                        ? "ℹ No hay productos para el estado seleccionado."
-                        : "ℹ No se encontraron productos que coincidan con \"" + txtBuscar.getText().trim() + "\".");
+                        ? "No hay productos para el estado seleccionado."
+                        : "No se encontraron productos que coincidan con \"" + txtBuscar.getText().trim() + "\".");
             } else {
                 lblSinResultados.setForeground(new Color(100, 116, 139));
+                lblSinResultados.setIcon(null);
                 lblSinResultados.setText(modeloTabla.getRowCount() + " producto(s) encontrados.");
             }
         }
@@ -1904,7 +1910,7 @@ public class SistemaInventarioMercadoEconomia {
             String codigo = (String) modeloTabla.getValueAt(fila, 0);
             Producto p = repo.buscarProductoPorCodigo(codigo);
             if (p == null) {
-                JOptionPane.showMessageDialog(this, "El producto ya no se encuentra en el sistema.", "Editar Producto (CU02)", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "El producto ya no se encuentra en el sistema.", "Editar Producto", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             abrirDialogoProducto(p, null);
@@ -1923,9 +1929,9 @@ public class SistemaInventarioMercadoEconomia {
                 // Flujo alternativo CU03: advertir si tiene existencias > 0
                 String msg = "¿Desea desactivar el producto '" + p.getNombre() + "'?";
                 if (p.getExistenciaActual() > 0) {
-                    msg = "⚠ ADVERTENCIA: El producto aún tiene " + p.getExistenciaActual() + " unidades en inventario.\n" + msg;
+                    msg = "ADVERTENCIA: El producto aún tiene " + p.getExistenciaActual() + " unidades en inventario.\n" + msg;
                 }
-                int op = JOptionPane.showConfirmDialog(this, msg, "Confirmar Desactivación (CU03)", JOptionPane.YES_NO_OPTION);
+                int op = JOptionPane.showConfirmDialog(this, msg, "Confirmar Desactivación", JOptionPane.YES_NO_OPTION);
                 if (op == JOptionPane.YES_OPTION) {
                     p.desactivar();
                     repo.registrarLog(usuarioActual.getNombreUsuario(), "Productos", "Desactivó producto: " + p.getCodigo());
@@ -1953,7 +1959,7 @@ public class SistemaInventarioMercadoEconomia {
         public void abrirDialogoProducto(Producto productoEditar, String codigoSugerido) {
             boolean esEdicion = (productoEditar != null);
             JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this),
-                    esEdicion ? "Editar Producto (CU02)" : "Registrar Nuevo Producto (CU01)", true);
+                    esEdicion ? "Editar Producto" : "Registrar Nuevo Producto", true);
             dialog.setSize(440, 480);
             dialog.setLocationRelativeTo(this);
             dialog.setLayout(new BorderLayout());
@@ -2019,12 +2025,12 @@ public class SistemaInventarioMercadoEconomia {
                         productoEditar.setPrecio(precio);
                         productoEditar.setNiveles(min, max);
                         repo.registrarLog(usuarioActual.getNombreUsuario(), "Productos", "Editó producto: " + cod);
-                        JOptionPane.showMessageDialog(dialog, "Producto actualizado correctamente (CU02).");
+                        JOptionPane.showMessageDialog(dialog, "Producto actualizado correctamente.");
                     } else {
                         Producto nuevo = new Producto(cod, nom, repo.obtenerOCrearCategoria(categoria),
                                 (String) cmbUni.getSelectedItem(), precio, exist, min, max);
                         repo.agregarProducto(nuevo, usuarioActual);
-                        JOptionPane.showMessageDialog(dialog, "Producto registrado correctamente (CU01).");
+                        JOptionPane.showMessageDialog(dialog, "Producto registrado correctamente.");
                     }
                     onCambio.run();
                     dialog.dispose();
@@ -2089,7 +2095,7 @@ public class SistemaInventarioMercadoEconomia {
         }
 
         private void construirUI() {
-            JLabel lblTitulo = new JLabel("Registro de Entradas y Salidas de Mercancía (CU10 / CU05)");
+            JLabel lblTitulo = new JLabel("Registro de Entradas y Salidas de Mercancía");
             lblTitulo.setFont(FUENTE_TITULO);
             lblTitulo.setForeground(COLOR_TEXTO);
 
@@ -2109,7 +2115,7 @@ public class SistemaInventarioMercadoEconomia {
             p.setOpaque(false);
             campo.setToolTipText("Escriba el código (ej. P001) y presione Enter o Buscar");
             campo.addActionListener(e -> accionBuscar.run());
-            JButton btn = new JButton("🔍 Buscar");
+            JButton btn = new JButton("Buscar", new Icono("BUSCAR"));
             btn.setFocusPainted(false);
             btn.addActionListener(e -> accionBuscar.run());
             p.add(campo, BorderLayout.CENTER);
@@ -2125,7 +2131,7 @@ public class SistemaInventarioMercadoEconomia {
                     new EmptyBorder(20, 20, 20, 20)
             ));
 
-            JLabel lblSub = new JLabel("📥 Registrar Entrada de Mercancía (CU10)");
+            JLabel lblSub = new JLabel("Registrar Entrada de Mercancía", new Icono("IMPORTAR"), SwingConstants.LEFT);
             lblSub.setFont(FUENTE_SUBTITULO);
             lblSub.setForeground(COLOR_PRIMARIO);
 
@@ -2148,7 +2154,7 @@ public class SistemaInventarioMercadoEconomia {
 
             cmbProdEntrada.addActionListener(e -> actualizarEtiquetasStock());
 
-            form.add(new JLabel("Buscar por código (CU04):")); form.add(crearBuscador(txtCodigoEntrada, this::buscarProductoEntrada));
+            form.add(new JLabel("Buscar por código:")); form.add(crearBuscador(txtCodigoEntrada, this::buscarProductoEntrada));
             form.add(new JLabel("Seleccionar Producto:*")); form.add(cmbProdEntrada);
             form.add(new JLabel("Existencia Actual:")); form.add(lblStockActualEntrada);
             form.add(new JLabel("Cantidad Recibida:*")); form.add(txtCantEntrada);
@@ -2174,7 +2180,7 @@ public class SistemaInventarioMercadoEconomia {
                     new EmptyBorder(20, 20, 20, 20)
             ));
 
-            JLabel lblSub = new JLabel("📤 Registrar Salida por Venta (CU05)");
+            JLabel lblSub = new JLabel("Registrar Salida por Venta", new Icono("EXPORTAR"), SwingConstants.LEFT);
             lblSub.setFont(FUENTE_SUBTITULO);
             lblSub.setForeground(new Color(30, 58, 138));
 
@@ -2194,7 +2200,7 @@ public class SistemaInventarioMercadoEconomia {
 
             cmbProdSalida.addActionListener(e -> actualizarEtiquetasStock());
 
-            form.add(new JLabel("Buscar por código (CU04):")); form.add(crearBuscador(txtCodigoSalida, this::buscarProductoSalida));
+            form.add(new JLabel("Buscar por código:")); form.add(crearBuscador(txtCodigoSalida, this::buscarProductoSalida));
             form.add(new JLabel("Seleccionar Producto:*")); form.add(cmbProdSalida);
             form.add(new JLabel("Existencia Disponible:")); form.add(lblStockActualSalida);
             form.add(new JLabel("Cantidad Vendida / Salida:*")); form.add(txtCantSalida);
@@ -2229,7 +2235,7 @@ public class SistemaInventarioMercadoEconomia {
             try {
                 Producto p = repo.getControladorMovimiento().localizarProducto(codigo);
                 if (!p.isActivo()) {
-                    JOptionPane.showMessageDialog(this, "El producto " + p.getCodigo() + " está inactivo y no admite nuevos movimientos (CU03).",
+                    JOptionPane.showMessageDialog(this, "El producto " + p.getCodigo() + " está inactivo y no admite nuevos movimientos.",
                             "Producto inactivo", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -2253,15 +2259,15 @@ public class SistemaInventarioMercadoEconomia {
                 cmbProdSalida.setSelectedItem(p);
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage() + "\nNo se puede registrar la salida.",
-                        "Buscar producto (CU05)", JOptionPane.WARNING_MESSAGE);
+                        "Buscar producto", JOptionPane.WARNING_MESSAGE);
             }
         }
 
         /** Flujo alternativo CU10: si el producto no existe, ofrecer registrarlo (CU01). */
         private void ofrecerRegistroProducto(String codigo) {
             int op = JOptionPane.showConfirmDialog(this,
-                    "No existe ningún producto con el código '" + codigo + "'.\n¿Desea registrarlo ahora (CU01)?",
-                    "Producto no encontrado (CU10)", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    "No existe ningún producto con el código '" + codigo + "'.\n¿Desea registrarlo ahora?",
+                    "Producto no encontrado", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (op == JOptionPane.YES_OPTION && registrarProductoNuevo != null) {
                 registrarProductoNuevo.accept(codigo);
                 refrescarCombos();
@@ -2297,8 +2303,7 @@ public class SistemaInventarioMercadoEconomia {
         private String mensajeAlerta(Producto p) {
             AlertaInventario a = repo.getGestorAlertas().getAlertaActivaDe(p.getCodigo());
             if (a == null) return "";
-            String icono = "REABASTECIMIENTO".equals(a.getTipo()) ? "🚨" : "⚠";
-            return "\n\n" + icono + " ALERTA (CU08) - " + a.getTipo() + ":\n" + a.getMensaje();
+            return "\n\nALERTA - " + a.getTipo() + ":\n" + a.getMensaje();
         }
 
         private void procesarEntrada() {
@@ -2321,11 +2326,11 @@ public class SistemaInventarioMercadoEconomia {
 
                 JOptionPane.showMessageDialog(this,
                         "Entrada registrada exitosamente.\nNueva existencia de " + sel.getNombre() + ": " + sel.getExistenciaActual() + mensajeAlerta(sel),
-                        "Entrada Confirmada (CU10)", JOptionPane.INFORMATION_MESSAGE);
+                        "Entrada Confirmada", JOptionPane.INFORMATION_MESSAGE);
             } catch (ProductoNoEncontradoException ex) {
                 ofrecerRegistroProducto(ex.getCodigo());
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Validación CU10", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Validación", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -2346,9 +2351,9 @@ public class SistemaInventarioMercadoEconomia {
 
                 JOptionPane.showMessageDialog(this,
                         "Salida registrada exitosamente.\nNueva existencia de " + sel.getNombre() + ": " + sel.getExistenciaActual() + mensajeAlerta(sel),
-                        "Salida Confirmada (CU05)", JOptionPane.INFORMATION_MESSAGE);
+                        "Salida Confirmada", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Validación CU05", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Validación", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -2406,7 +2411,7 @@ public class SistemaInventarioMercadoEconomia {
         }
 
         private void construirUI() {
-            JLabel lblTitulo = new JLabel("Historial de Movimientos del Inventario (CU06)");
+            JLabel lblTitulo = new JLabel("Historial de Movimientos del Inventario");
             lblTitulo.setFont(FUENTE_TITULO);
             lblTitulo.setForeground(COLOR_TEXTO);
 
@@ -2444,7 +2449,7 @@ public class SistemaInventarioMercadoEconomia {
                 refrescarTabla();
             });
 
-            JButton btnExportar = crearBotonEstilizado("📄 Exportar Excel / PDF (RNF13)", COLOR_PRIMARIO, Color.WHITE);
+            JButton btnExportar = crearBotonEstilizado("EXPORTAR", "Exportar Excel / PDF (RNF13)", COLOR_PRIMARIO, Color.WHITE);
             btnExportar.addActionListener(e -> exportar());
 
             filaFiltros.add(new JLabel("Tipo:"));
@@ -2520,12 +2525,12 @@ public class SistemaInventarioMercadoEconomia {
                 hasta = leerFecha(txtHasta, "hasta");
             } catch (IllegalArgumentException ex) {
                 lblEstado.setForeground(COLOR_ALERTA_EXCESO);
-                lblEstado.setText("⚠ " + ex.getMessage());
+                ponerEstado(lblEstado, "ALERTA", ex.getMessage());
                 return;
             }
             if (desde != null && hasta != null && desde.isAfter(hasta)) {
                 lblEstado.setForeground(COLOR_ALERTA_EXCESO);
-                lblEstado.setText("⚠ La fecha 'desde' no puede ser posterior a la fecha 'hasta'.");
+                ponerEstado(lblEstado, "ALERTA", "La fecha 'desde' no puede ser posterior a la fecha 'hasta'.");
                 return;
             }
 
@@ -2554,9 +2559,10 @@ public class SistemaInventarioMercadoEconomia {
             if (modeloTabla.getRowCount() == 0) {
                 // Flujo alternativo CU06
                 lblEstado.setForeground(COLOR_ALERTA_EXCESO);
-                lblEstado.setText("ℹ No hay movimientos registrados para los filtros / rango de fechas seleccionados.");
+                ponerEstado(lblEstado, "INFO", "No hay movimientos registrados para los filtros / rango de fechas seleccionados.");
             } else {
                 lblEstado.setForeground(new Color(100, 116, 139));
+                lblEstado.setIcon(null);
                 lblEstado.setText(modeloTabla.getRowCount() + " movimiento(s) encontrados.");
             }
         }
@@ -2603,7 +2609,7 @@ public class SistemaInventarioMercadoEconomia {
         }
 
         private void construirUI() {
-            JLabel lblTitulo = new JLabel("Control de Niveles de Inventario y Alertas (CU07 / CU08)");
+            JLabel lblTitulo = new JLabel("Control de Niveles de Inventario y Alertas");
             lblTitulo.setFont(FUENTE_TITULO);
             lblTitulo.setForeground(COLOR_TEXTO);
 
@@ -2616,14 +2622,14 @@ public class SistemaInventarioMercadoEconomia {
 
             JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
             botones.setOpaque(false);
-            JButton btnVerificar = crearBotonEstilizado("🔄 Verificar niveles ahora (CU08)", COLOR_SECUNDARIO, Color.WHITE);
-            JButton btnExportar = crearBotonEstilizado("📄 Exportar reporte de abastecimiento", COLOR_PRIMARIO, Color.WHITE);
+            JButton btnVerificar = crearBotonEstilizado("ACTUALIZAR", "Verificar niveles ahora", COLOR_SECUNDARIO, Color.WHITE);
+            JButton btnExportar = crearBotonEstilizado("EXPORTAR", "Exportar reporte de abastecimiento", COLOR_PRIMARIO, Color.WHITE);
             btnVerificar.addActionListener(e -> {
                 repo.getControladorAlertas().verificarNiveles();
                 repo.registrarLog(usuarioActual.getNombreUsuario(), "Alertas", "Verificación manual de niveles de inventario.");
                 onCambio.run();
                 JOptionPane.showMessageDialog(this, "Verificación completada. Alertas activas: "
-                        + repo.getControladorAlertas().mostrarAlertasActivas().size(), "Verificar niveles (CU08)", JOptionPane.INFORMATION_MESSAGE);
+                        + repo.getControladorAlertas().mostrarAlertasActivas().size(), "Verificar niveles", JOptionPane.INFORMATION_MESSAGE);
             });
             btnExportar.addActionListener(e -> exportarReporteAbastecimiento());
             botones.add(btnVerificar);
@@ -2645,7 +2651,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel cardBajo = new JPanel(new BorderLayout(5, 5));
             cardBajo.setBackground(COLOR_PANEL);
             cardBajo.setBorder(new CompoundBorder(
-                    new TitledBorder(new LineBorder(COLOR_ALERTA_BAJO), "🚨 Productos por Reabastecer (Stock <= Mínimo)"),
+                    new TitledBorder(new LineBorder(COLOR_ALERTA_BAJO), "Productos por Reabastecer (Stock <= Mínimo)"),
                     new EmptyBorder(8, 8, 8, 8)
             ));
             modeloBajoStock = modeloNoEditable(new String[]{"Código", "Producto", "Actual", "Mínimo", "Sugerido"});
@@ -2657,7 +2663,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel cardExceso = new JPanel(new BorderLayout(5, 5));
             cardExceso.setBackground(COLOR_PANEL);
             cardExceso.setBorder(new CompoundBorder(
-                    new TitledBorder(new LineBorder(COLOR_ALERTA_EXCESO), "⚠️ Productos con Exceso (Stock >= Máximo)"),
+                    new TitledBorder(new LineBorder(COLOR_ALERTA_EXCESO), "Productos con Exceso (Stock >= Máximo)"),
                     new EmptyBorder(8, 8, 8, 8)
             ));
             modeloExcesoStock = modeloNoEditable(new String[]{"Código", "Producto", "Actual", "Máximo", "Excedente"});
@@ -2672,7 +2678,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel cardAlertas = new JPanel(new BorderLayout(5, 5));
             cardAlertas.setBackground(COLOR_PANEL);
             cardAlertas.setBorder(new CompoundBorder(
-                    new TitledBorder(new LineBorder(new Color(203, 213, 225)), "Registro de Notificaciones Observer (AlertaInventario - CU08)"),
+                    new TitledBorder(new LineBorder(new Color(203, 213, 225)), "Registro de Notificaciones Observer (AlertaInventario)"),
                     new EmptyBorder(8, 8, 8, 8)
             ));
             modeloHistorialAlertas = modeloNoEditable(new String[]{"ID", "Estado", "Tipo Alerta", "Producto", "Mensaje Generado", "Fecha/Hora"});
@@ -2711,9 +2717,10 @@ public class SistemaInventarioMercadoEconomia {
             // Flujo alternativo CU07: ningún producto fuera de rango
             if (modeloBajoStock.getRowCount() == 0 && modeloExcesoStock.getRowCount() == 0) {
                 lblEstadoNiveles.setForeground(COLOR_NORMAL);
-                lblEstadoNiveles.setText("✔ Todos los productos activos están dentro del rango definido.");
+                ponerEstado(lblEstadoNiveles, "OK", "Todos los productos activos están dentro del rango definido.");
             } else {
                 lblEstadoNiveles.setForeground(COLOR_TEXTO);
+                lblEstadoNiveles.setIcon(null);
                 lblEstadoNiveles.setText(modeloBajoStock.getRowCount() + " por reabastecer  |  "
                         + modeloExcesoStock.getRowCount() + " con exceso");
                 lblEstadoNiveles.setToolTipText("Verificación automática cada "
@@ -2750,7 +2757,7 @@ public class SistemaInventarioMercadoEconomia {
             }
             if (filas.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Ningún producto se encuentra fuera de rango; no hay datos para el reporte.",
-                        "Reporte de abastecimiento (CU07)", JOptionPane.INFORMATION_MESSAGE);
+                        "Reporte de abastecimiento", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             boolean ok = ExportadorReportes.exportar(this, "Reporte de abastecimiento - Niveles de inventario",
@@ -2784,7 +2791,7 @@ public class SistemaInventarioMercadoEconomia {
         }
 
         private void construirUI() {
-            JLabel lblTitulo = new JLabel("Administración de Usuarios, Roles y Auditoría (CU09 / RNF29)");
+            JLabel lblTitulo = new JLabel("Administración de Usuarios, Roles y Auditoría (RNF29)");
             lblTitulo.setFont(FUENTE_TITULO);
             lblTitulo.setForeground(COLOR_TEXTO);
 
@@ -2802,7 +2809,7 @@ public class SistemaInventarioMercadoEconomia {
             JPanel botonesUsuarios = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
             botonesUsuarios.setOpaque(false);
             JButton btnCrearUsuario = crearBotonEstilizado("+ Nuevo Usuario", COLOR_SECUNDARIO, Color.WHITE);
-            JButton btnEditarUsuario = crearBotonEstilizado("✏️ Modificar Usuario", new Color(37, 99, 235), Color.WHITE);
+            JButton btnEditarUsuario = crearBotonEstilizado("EDITAR", "Modificar Usuario", new Color(37, 99, 235), Color.WHITE);
             JButton btnAlternarEstado = crearBotonEstilizado("Activar / Desactivar Cuenta", COLOR_ALERTA_EXCESO, Color.WHITE);
             btnCrearUsuario.addActionListener(e -> dialogoCrearUsuario());
             btnEditarUsuario.addActionListener(e -> dialogoEditarUsuario());
@@ -2813,8 +2820,8 @@ public class SistemaInventarioMercadoEconomia {
 
             JPanel botonesRespaldo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
             botonesRespaldo.setOpaque(false);
-            JButton btnRespaldo = crearBotonEstilizado("💾 Crear Respaldo (RNF24)", COLOR_PRIMARIO, Color.WHITE);
-            JButton btnRestaurar = crearBotonEstilizado("♻ Restaurar Respaldo (RNF25)", new Color(71, 85, 105), Color.WHITE);
+            JButton btnRespaldo = crearBotonEstilizado("GUARDAR", "Crear Respaldo (RNF24)", COLOR_PRIMARIO, Color.WHITE);
+            JButton btnRestaurar = crearBotonEstilizado("RESTAURAR", "Restaurar Respaldo (RNF25)", new Color(71, 85, 105), Color.WHITE);
             btnRespaldo.addActionListener(e -> crearRespaldo());
             btnRestaurar.addActionListener(e -> restaurarRespaldo());
             botonesRespaldo.add(btnRespaldo);
@@ -2872,7 +2879,7 @@ public class SistemaInventarioMercadoEconomia {
             if (u == null) return;
             // Flujo alternativo CU09: No permitir desactivar la propia cuenta
             if (u.getNombreUsuario().equalsIgnoreCase(adminActual.getNombreUsuario())) {
-                JOptionPane.showMessageDialog(this, "No puede desactivar su propia cuenta de administrador (CU09).", "Acción Restringida", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No puede desactivar su propia cuenta de administrador.", "Acción Restringida", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             u.setActivo(!u.isActivo());
@@ -2882,7 +2889,7 @@ public class SistemaInventarioMercadoEconomia {
         }
 
         private void dialogoCrearUsuario() {
-            JDialog d = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Registrar Nuevo Usuario (CU09)", true);
+            JDialog d = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Registrar Nuevo Usuario", true);
             d.setSize(420, 320);
             d.setLocationRelativeTo(this);
             d.setLayout(new BorderLayout());
@@ -2944,7 +2951,7 @@ public class SistemaInventarioMercadoEconomia {
             Usuario usuario = usuarioSeleccionado();
             if (usuario == null) return;
 
-            JDialog d = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Modificar Usuario (CU09)", true);
+            JDialog d = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Modificar Usuario", true);
             d.setSize(460, 340);
             d.setLocationRelativeTo(this);
             d.setLayout(new BorderLayout());
@@ -2983,7 +2990,7 @@ public class SistemaInventarioMercadoEconomia {
                 }
                 boolean esPropio = usuario.getNombreUsuario().equalsIgnoreCase(adminActual.getNombreUsuario());
                 if (esPropio && !rol.tienePermiso(Rol.P_USUARIOS)) {
-                    JOptionPane.showMessageDialog(d, "No puede quitarse a sí mismo el rol de administrador (CU09).",
+                    JOptionPane.showMessageDialog(d, "No puede quitarse a sí mismo el rol de administrador.",
                             "Acción Restringida", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -3000,7 +3007,7 @@ public class SistemaInventarioMercadoEconomia {
                 refrescar();
                 d.dispose();
                 JOptionPane.showMessageDialog(this, "Usuario actualizado. Los permisos aplican en el siguiente inicio de sesión.",
-                        "Modificar Usuario (CU09)", JOptionPane.INFORMATION_MESSAGE);
+                        "Modificar Usuario", JOptionPane.INFORMATION_MESSAGE);
             });
             btns.add(btnCancelar);
             btns.add(btnGuardar);
@@ -3327,6 +3334,182 @@ public class SistemaInventarioMercadoEconomia {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(8, 15, 8, 15));
         return btn;
+    }
+
+    private static JButton crearBotonEstilizado(String icono, String texto, Color fondo, Color textoColor) {
+        JButton btn = crearBotonEstilizado(texto, fondo, textoColor);
+        btn.setIcon(new Icono(icono));
+        btn.setIconTextGap(8);
+        return btn;
+    }
+
+    private static void ponerEstado(JLabel lbl, String icono, String texto) {
+        lbl.setIcon(icono == null ? null : new Icono(icono));
+        lbl.setText(texto);
+    }
+
+    /**
+     * Iconos vectoriales dibujados con Java2D. Swing no muestra emojis,
+     * asi que cada icono se pinta con lineas y figuras simples.
+     * Si no se indica color, toma el color de texto del componente.
+     */
+    static class Icono implements Icon {
+        private final String tipo;
+        private final int tam;
+        private final Color color;
+
+        Icono(String tipo) { this(tipo, 16, null); }
+        Icono(String tipo, int tam) { this(tipo, tam, null); }
+        Icono(String tipo, int tam, Color color) {
+            this.tipo = tipo;
+            this.tam = tam;
+            this.color = color;
+        }
+
+        @Override public int getIconWidth() { return tam; }
+        @Override public int getIconHeight() { return tam; }
+
+        @Override
+        public void paintIcon(Component c, Graphics g0, int x, int y) {
+            Graphics2D g = (Graphics2D) g0.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            g.translate(x, y);
+            g.scale(tam / 16.0, tam / 16.0);
+            g.setColor(color != null ? color : (c != null ? c.getForeground() : Color.DARK_GRAY));
+            g.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            dibujar(g, tipo);
+            g.dispose();
+        }
+
+        private static void dibujar(Graphics2D g, String tipo) {
+            Path2D p = new Path2D.Double();
+            switch (tipo) {
+                case "CARRITO":
+                    p.moveTo(1, 2); p.lineTo(3.5, 2); p.lineTo(5.5, 10.5); p.lineTo(13, 10.5);
+                    p.lineTo(14.5, 4.5); p.lineTo(4.3, 4.5);
+                    g.draw(p);
+                    g.fill(new Ellipse2D.Double(5, 12, 2.6, 2.6));
+                    g.fill(new Ellipse2D.Double(11, 12, 2.6, 2.6));
+                    break;
+                case "CAMPANA":
+                    p.moveTo(2.8, 12); p.lineTo(4.2, 10.3); p.lineTo(4.2, 7);
+                    p.curveTo(4.2, 3.6, 11.8, 3.6, 11.8, 7);
+                    p.lineTo(11.8, 10.3); p.lineTo(13.2, 12); p.closePath();
+                    g.fill(p);
+                    g.fill(new Ellipse2D.Double(6.6, 12.4, 2.8, 2.6));
+                    g.fill(new Ellipse2D.Double(7.2, 1.6, 1.6, 1.6));
+                    break;
+                case "USUARIO":
+                    g.fill(new Ellipse2D.Double(5, 1.5, 6, 6));
+                    p.moveTo(2, 15); p.curveTo(2, 9, 14, 9, 14, 15); p.closePath();
+                    g.fill(p);
+                    break;
+                case "USUARIOS":
+                    g.fill(new Ellipse2D.Double(1.8, 3, 4.6, 4.6));
+                    p.moveTo(0.3, 13); p.curveTo(0.3, 8.3, 8, 8.3, 8, 13); p.closePath();
+                    g.fill(p);
+                    g.fill(new Ellipse2D.Double(8.8, 2, 5, 5));
+                    Path2D p2 = new Path2D.Double();
+                    p2.moveTo(7, 15); p2.curveTo(7, 8.8, 15.8, 8.8, 15.8, 15); p2.closePath();
+                    g.fill(p2);
+                    break;
+                case "GRAFICA":
+                    g.fill(new RoundRectangle2D.Double(1.5, 9, 3.4, 5.5, 1, 1));
+                    g.fill(new RoundRectangle2D.Double(6.3, 5, 3.4, 9.5, 1, 1));
+                    g.fill(new RoundRectangle2D.Double(11.1, 1.5, 3.4, 13, 1, 1));
+                    break;
+                case "CAJA":
+                    g.draw(new Rectangle2D.Double(2, 5.5, 12, 9));
+                    p.moveTo(2, 5.5); p.lineTo(4, 2); p.lineTo(12, 2); p.lineTo(14, 5.5);
+                    p.moveTo(8, 2); p.lineTo(8, 5.5);
+                    p.moveTo(6, 9); p.lineTo(10, 9);
+                    g.draw(p);
+                    break;
+                case "RESTAURAR":
+                    g.translate(16, 0);
+                    g.scale(-1, 1);
+                    // continua igual que ACTUALIZAR, en espejo
+                case "ACTUALIZAR":
+                    g.draw(new Arc2D.Double(2.5, 2.5, 11, 11, 40, 280, Arc2D.OPEN));
+                    p.moveTo(14.8, 1.8); p.lineTo(14.8, 6.6); p.lineTo(10, 6.6); p.closePath();
+                    g.fill(p);
+                    break;
+                case "HISTORIAL":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 13, 13));
+                    p.moveTo(8, 4.5); p.lineTo(8, 8); p.lineTo(11, 10);
+                    g.draw(p);
+                    break;
+                case "ALERTA":
+                    p.moveTo(8, 1.3); p.lineTo(15, 14.3); p.lineTo(1, 14.3); p.closePath();
+                    g.draw(p);
+                    g.draw(new Line2D.Double(8, 6, 8, 9.5));
+                    g.fill(new Ellipse2D.Double(7.1, 11, 1.8, 1.8));
+                    break;
+                case "BAJA":
+                case "SUBE":
+                    if ("SUBE".equals(tipo)) {
+                        g.translate(0, 16);
+                        g.scale(1, -1);
+                    }
+                    p.moveTo(1, 3.5); p.lineTo(6, 8.5); p.lineTo(9, 5.5); p.lineTo(14, 10.5);
+                    g.draw(p);
+                    Path2D f = new Path2D.Double();
+                    f.moveTo(15.3, 12.8); f.lineTo(10.8, 12.8); f.lineTo(15.3, 8.3); f.closePath();
+                    g.fill(f);
+                    break;
+                case "BUSCAR":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 9, 9));
+                    g.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g.draw(new Line2D.Double(9.4, 9.4, 14.3, 14.3));
+                    break;
+                case "EDITAR":
+                    p.moveTo(11, 1.5); p.lineTo(14.5, 5); p.lineTo(5.5, 14); p.lineTo(1.5, 14.5);
+                    p.lineTo(2, 10.5); p.closePath();
+                    p.moveTo(9.3, 3.2); p.lineTo(12.8, 6.7);
+                    g.draw(p);
+                    break;
+                case "BLOQUEAR":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 13, 13));
+                    g.draw(new Line2D.Double(3.4, 12.6, 12.6, 3.4));
+                    break;
+                case "IMPORTAR":
+                case "EXPORTAR":
+                    p.moveTo(1.5, 10); p.lineTo(1.5, 14.5); p.lineTo(14.5, 14.5); p.lineTo(14.5, 10);
+                    p.moveTo(8, 1.5); p.lineTo(8, 10);
+                    if ("IMPORTAR".equals(tipo)) {
+                        p.moveTo(4.5, 6.5); p.lineTo(8, 10); p.lineTo(11.5, 6.5);
+                    } else {
+                        p.moveTo(4.5, 5); p.lineTo(8, 1.5); p.lineTo(11.5, 5);
+                    }
+                    g.draw(p);
+                    break;
+                case "INFO":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 13, 13));
+                    g.fill(new Ellipse2D.Double(7.1, 4, 1.8, 1.8));
+                    g.draw(new Line2D.Double(8, 7.3, 8, 11.8));
+                    break;
+                case "OK":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 13, 13));
+                    p.moveTo(4.8, 8.2); p.lineTo(7, 10.5); p.lineTo(11.3, 5.6);
+                    g.draw(p);
+                    break;
+                case "ERROR":
+                    g.draw(new Ellipse2D.Double(1.5, 1.5, 13, 13));
+                    g.draw(new Line2D.Double(5.5, 5.5, 10.5, 10.5));
+                    g.draw(new Line2D.Double(10.5, 5.5, 5.5, 10.5));
+                    break;
+                case "GUARDAR":
+                    p.moveTo(1.5, 1.5); p.lineTo(12, 1.5); p.lineTo(14.5, 4); p.lineTo(14.5, 14.5);
+                    p.lineTo(1.5, 14.5); p.closePath();
+                    g.draw(p);
+                    g.draw(new Rectangle2D.Double(4.5, 1.5, 6, 3.8));
+                    g.draw(new Rectangle2D.Double(4, 9, 8, 5.5));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private static void estilizarTabla(JTable tabla) {
