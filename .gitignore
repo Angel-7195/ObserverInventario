@@ -1,2 +1,7 @@
 *.class
 .vs/
+
+# Datos locales del sistema (no se suben al repositorio)
+inventario_datos.dat
+inventario_datos.dat.*
+respaldos/

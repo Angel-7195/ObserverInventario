@@ -1,2 +1,5 @@
 *.class
 .vs/
+inventario_datos.dat
+inventario_datos.dat.*
+respaldos/
